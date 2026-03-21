@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaCRM — AI-Powered Sales Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --teal:#00C9A7;--teal-dim:#00a88a;--teal-glow:rgba(0,201,167,.25);
+  --navy:#0B0F1A;--card:#111827;--card2:#151f30;--border:rgba(255,255,255,.07);
+  --text:#e8eaf0;--muted:#7a8499;--muted2:#9aa3b5;
+  --new:#4f8ef7;--contacted:#f4a532;--qualified:#9b6dff;--converted:#00C9A7;--lost:#ff5a72;
+  --sidebar:240px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;overflow-x:hidden;}
+.bg-mesh{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 40% at 80% 20%,rgba(0,201,167,.08) 0%,transparent 70%),
+             radial-gradient(ellipse 50% 50% at 10% 80%,rgba(79,142,247,.06) 0%,transparent 70%);
+  animation:meshPulse 8s ease-in-out infinite alternate;}
+@keyframes meshPulse{from{opacity:.7}to{opacity:1}}
+.bg-dots{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:radial-gradient(circle,rgba(255,255,255,.035) 1px,transparent 1px);
+  background-size:32px 32px;}
+
+/* ══ LOGIN SCREEN ══ */
+.login-screen{
+  position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;
+  background:var(--navy);
+}
+.login-card{
+  background:var(--card);border:1px solid rgba(0,201,167,.25);border-radius:20px;
+  padding:36px;width:90%;max-width:380px;
+  box-shadow:0 30px 80px rgba(0,0,0,.5);
+  animation:fadeUp .5s ease both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.login-logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:28px;}
+.login-logo-icon{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--teal),#00876f);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 24px var(--teal-glow);}
+.login-logo-text{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;}
+.login-logo-text span{color:var(--teal);}
+.login-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff;margin-bottom:6px;text-align:center;}
+.login-sub{font-size:12px;color:var(--muted);text-align:center;margin-bottom:24px;}
+.login-group{margin-bottom:14px;}
+.login-label{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;display:block;}
+.login-input{width:100%;padding:11px 14px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+.login-input:focus{border-color:rgba(0,201,167,.5);}
+.login-input::placeholder{color:var(--muted);}
+.login-btn{width:100%;padding:12px;border-radius:11px;border:none;background:linear-gradient(135deg,var(--teal),var(--teal-dim));color:#000;font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;cursor:pointer;margin-top:8px;transition:all .2s;}
+.login-btn:hover{box-shadow:0 8px 28px var(--teal-glow);}
+.login-error{background:rgba(255,90,114,.1);border:1px solid rgba(255,90,114,.25);border-radius:9px;padding:10px 14px;font-size:12px;color:var(--lost);margin-top:10px;display:none;}
+.login-hint{font-size:11px;color:var(--muted);text-align:center;margin-top:14px;}
+.login-hint code{background:rgba(255,255,255,.07);padding:2px 6px;border-radius:4px;font-size:11px;}
+
+/* ══ APP LAYOUT ══ */
+.app{position:relative;z-index:1;display:flex;min-height:100vh;display:none;}
+.app.visible{display:flex;}
+.sidebar{width:var(--sidebar);min-height:100vh;flex-shrink:0;background:rgba(13,19,33,.92);backdrop-filter:blur(24px);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 14px 16px;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;padding:0 6px;}
+.logo-icon{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--teal),#00876f);display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 0 22px var(--teal-glow);animation:iconGlow 3s ease-in-out infinite alternate;}
+@keyframes iconGlow{from{box-shadow:0 0 10px var(--teal-glow)}to{box-shadow:0 0 28px rgba(0,201,167,.5)}}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;color:#fff;}
+.logo-text span{color:var(--teal);}
+.nav-label{font-size:9.5px;font-weight:700;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;padding:0 8px;margin-bottom:6px;margin-top:4px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:10px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--muted2);transition:all .2s;margin-bottom:2px;border:1px solid transparent;user-select:none;}
+.nav-item:hover{background:rgba(255,255,255,.05);color:var(--text);}
+.nav-item.active{background:rgba(0,201,167,.13);color:var(--teal);border-color:rgba(0,201,167,.22);}
+.nav-badge{margin-left:auto;background:var(--teal);color:#000;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px;}
+.sidebar-bottom{margin-top:auto;padding-top:12px;border-top:1px solid var(--border);}
+.user-row{display:flex;align-items:center;gap:9px;padding:10px;}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--qualified));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#fff;font-family:'Syne',sans-serif;flex-shrink:0;}
+.user-name{font-size:12.5px;font-weight:600;color:var(--text);}
+.user-role{font-size:10.5px;color:var(--muted);}
+.logout-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:4px 8px;border-radius:6px;margin-left:auto;transition:color .2s;}
+.logout-btn:hover{color:var(--lost);}
+
+/* ══ PAGES ══ */
+.main{flex:1;overflow-y:auto;}
+.page{display:none;padding:28px;padding-bottom:80px;animation:fadeUp .4s ease both;}
+.page.active{display:block;}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px;}
+.page-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;}
+.page-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.topbar-right{display:flex;gap:9px;align-items:center;}
+.btn{padding:9px 18px;border-radius:10px;border:none;font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:linear-gradient(135deg,var(--teal),var(--teal-dim));color:#000;box-shadow:0 4px 18px var(--teal-glow);}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 26px rgba(0,201,167,.42);}
+.btn-ghost{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--border);}
+.btn-ghost:hover{background:rgba(255,255,255,.1);}
+.btn-danger{background:rgba(255,90,114,.1);color:var(--lost);border:1px solid rgba(255,90,114,.2);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+
+/* ══ STATS ══ */
+.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;margin-bottom:24px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:18px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;animation:fadeUp .5s ease both;}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,.25);}
+.stat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.025),transparent);}
+.stat-icon{font-size:22px;margin-bottom:10px;}
+.stat-label{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
+.stat-value{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;line-height:1;}
+.v-white{background:linear-gradient(135deg,#fff,rgba(255,255,255,.5));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.v-new{background:linear-gradient(135deg,var(--new),#7fb3ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.v-contacted{background:linear-gradient(135deg,var(--contacted),#ffd280);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.v-qualified{background:linear-gradient(135deg,var(--qualified),#c4a8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.v-converted{background:linear-gradient(135deg,var(--teal),#80ffe8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat-delta{font-size:11px;color:var(--teal);margin-top:5px;}
+.stat-bar{height:3px;border-radius:99px;background:rgba(255,255,255,.06);margin-top:10px;overflow:hidden;}
+.stat-fill{height:100%;border-radius:99px;transition:width 1.1s cubic-bezier(.23,1,.32,1);}
+
+/* ══ MID ROW ══ */
+.mid-row{display:grid;grid-template-columns:1fr 300px;gap:16px;margin-bottom:24px;}
+.chart-card,.ai-card,.content-card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:20px;}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.card-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;}
+.chip{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:6px;}
+.chip-teal{background:rgba(0,201,167,.15);color:var(--teal);border:1px solid rgba(0,201,167,.25);}
+.chip-purple{background:rgba(155,109,255,.15);color:var(--qualified);border:1px solid rgba(155,109,255,.25);}
+.chip-green{background:rgba(0,201,167,.15);color:var(--teal);}
+
+/* Funnel */
+.funnel{display:flex;flex-direction:column;gap:8px;}
+.funnel-row{display:flex;align-items:center;gap:11px;}
+.funnel-label{font-size:11.5px;color:var(--muted);width:76px;flex-shrink:0;font-weight:500;}
+.funnel-bar-wrap{flex:1;height:26px;background:rgba(255,255,255,.04);border-radius:6px;overflow:hidden;}
+.funnel-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:9px;font-size:11px;font-weight:700;color:rgba(0,0,0,.8);transition:width 1.3s cubic-bezier(.23,1,.32,1);}
+.funnel-count{font-size:12px;font-weight:700;color:var(--text);width:22px;text-align:right;flex-shrink:0;}
+
+/* AI health */
+.score-ring-wrap{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.score-ring{position:relative;width:76px;height:76px;flex-shrink:0;}
+.score-ring svg{transform:rotate(-90deg);}
+.ring-track{fill:none;stroke:rgba(255,255,255,.07);stroke-width:7;}
+.ring-fill{fill:none;stroke:var(--teal);stroke-width:7;stroke-linecap:round;stroke-dasharray:220;stroke-dashoffset:220;animation:ringFill 1.5s .9s ease forwards;}
+@keyframes ringFill{to{stroke-dashoffset:44}}
+.score-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-num{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;color:#fff;}
+.score-sub{font-size:9px;color:var(--teal);font-weight:700;}
+.ai-tips{display:flex;flex-direction:column;gap:7px;}
+.ai-tip{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:9px;padding:9px 11px;font-size:11.5px;color:var(--text);display:flex;gap:8px;align-items:flex-start;transition:background .2s;}
+.ai-tip:hover{background:rgba(0,201,167,.06);border-color:rgba(0,201,167,.2);}
+.ai-tip b{color:var(--teal);}
+
+/* ══ CONTROLS ══ */
+.controls{display:flex;gap:9px;margin-bottom:16px;flex-wrap:wrap;}
+.search-wrap{flex:1;position:relative;min-width:200px;}
+.search-wrap input{width:100%;padding:9px 13px 9px 36px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+.search-wrap input:focus{border-color:rgba(0,201,167,.45);}
+.search-wrap input::placeholder{color:var(--muted);}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none;}
+.filter-select{padding:9px 13px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;cursor:pointer;}
+.filter-select option{background:var(--card2);}
+
+/* ══ TABLE ══ */
+.leads-card{background:var(--card);border:1px solid var(--border);border-radius:15px;overflow:hidden;}
+.leads-header{display:grid;grid-template-columns:2fr 1.4fr 1fr 1fr 1fr 88px;padding:11px 18px;border-bottom:1px solid var(--border);font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);}
+.lead-row{display:grid;grid-template-columns:2fr 1.4fr 1fr 1fr 1fr 88px;padding:13px 18px;border-bottom:1px solid var(--border);align-items:center;transition:background .15s;animation:rowIn .35s ease both;}
+.lead-row:last-child{border-bottom:none;}
+.lead-row:hover{background:rgba(255,255,255,.022);}
+@keyframes rowIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+.lead-name-wrap{display:flex;align-items:center;gap:10px;}
+.avatar{width:33px;height:33px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;font-family:'Syne',sans-serif;}
+.lead-name{font-weight:600;font-size:13px;color:#fff;}
+.lead-email{font-size:11px;color:var(--muted);margin-top:1px;}
+.lead-company,.lead-phone{font-size:13px;color:var(--muted2);}
+.status-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:6px;font-size:10.5px;font-weight:700;}
+.status-dot{width:5px;height:5px;border-radius:50%;}
+.s-new{background:rgba(79,142,247,.12);color:var(--new);}.s-new .status-dot{background:var(--new);}
+.s-contacted{background:rgba(244,165,50,.12);color:var(--contacted);}.s-contacted .status-dot{background:var(--contacted);}
+.s-qualified{background:rgba(155,109,255,.12);color:var(--qualified);}.s-qualified .status-dot{background:var(--qualified);}
+.s-converted{background:rgba(0,201,167,.12);color:var(--converted);}.s-converted .status-dot{background:var(--converted);}
+.s-lost{background:rgba(255,90,114,.12);color:var(--lost);}.s-lost .status-dot{background:var(--lost);}
+.score-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:700;background:rgba(0,201,167,.1);color:var(--teal);}
+.action-btns{display:flex;gap:5px;}
+.act-btn{width:27px;height:27px;border-radius:7px;border:1px solid var(--border);background:rgba(255,255,255,.04);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s;color:var(--muted);}
+.act-btn:hover{background:rgba(0,201,167,.12);color:var(--teal);border-color:rgba(0,201,167,.3);}
+.act-btn.del:hover{background:rgba(255,90,114,.12);color:var(--lost);border-color:rgba(255,90,114,.3);}
+
+/* ══ MODAL ══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(10px);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--card2);border:1px solid rgba(0,201,167,.22);border-radius:18px;width:90%;max-width:480px;padding:26px;transform:scale(.94) translateY(18px);transition:all .3s cubic-bezier(.23,1,.32,1);box-shadow:0 28px 80px rgba(0,0,0,.5);max-height:90vh;overflow-y:auto;}
+.modal-overlay.open .modal{transform:scale(1) translateY(0);}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;}
+.close-btn{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.05);cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:17px;line-height:1;transition:all .2s;}
+.close-btn:hover{background:rgba(255,90,114,.15);color:var(--lost);}
+.form-group{margin-bottom:14px;}
+.form-label{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:block;}
+.form-input,.form-select,.form-textarea{width:100%;padding:10px 13px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:all .2s;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:rgba(0,201,167,.5);background:rgba(0,201,167,.03);}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--muted);}
+.form-select option{background:var(--card2);}
+.form-textarea{resize:vertical;min-height:70px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.modal-footer{display:flex;gap:9px;margin-top:20px;}
+.modal-footer .btn{flex:1;justify-content:center;}
+.notif-banner{background:rgba(0,201,167,.08);border:1px solid rgba(0,201,167,.2);border-radius:9px;padding:10px 13px;font-size:11.5px;color:var(--muted2);margin-top:12px;display:flex;gap:8px;align-items:center;}
+.notif-banner b{color:var(--teal);}
+
+/* ══ NOTES ══ */
+.notes-section{margin-top:16px;border-top:1px solid var(--border);padding-top:14px;}
+.notes-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;}
+.note-item{background:rgba(255,255,255,.03);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--text);margin-bottom:7px;border-left:2px solid rgba(0,201,167,.4);}
+.note-date{font-size:10px;color:var(--muted);margin-top:4px;}
+.add-note-row{display:flex;gap:8px;margin-top:8px;}
+.add-note-row input{flex:1;padding:8px 12px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;}
+.add-note-row input:focus{border-color:rgba(0,201,167,.4);}
+.add-note-row input::placeholder{color:var(--muted);}
+.add-note-btn{padding:8px 12px;border-radius:8px;border:none;background:rgba(0,201,167,.15);color:var(--teal);font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;transition:all .2s;}
+.add-note-btn:hover{background:rgba(0,201,167,.25);}
+
+/* ══ REMINDERS ══ */
+.reminder-form-card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:20px;margin-bottom:20px;}
+.reminders-list{display:flex;flex-direction:column;gap:10px;}
+.reminder-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:13px;transition:all .2s;}
+.reminder-item:hover{border-color:rgba(255,255,255,.12);}
+.reminder-item.done{opacity:.5;}
+.reminder-item.done .r-title{text-decoration:line-through;color:var(--muted);}
+.r-check{width:22px;height:22px;border-radius:6px;border:1.5px solid rgba(255,255,255,.15);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s;}
+.r-check.checked{background:var(--teal);border-color:var(--teal);color:#000;}
+.r-body{flex:1;}
+.r-title{font-size:13.5px;font-weight:600;color:#fff;margin-bottom:4px;}
+.r-meta{font-size:11.5px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.r-tag{padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700;}
+.r-notif{font-size:10px;color:var(--teal);background:rgba(0,201,167,.1);padding:2px 7px;border-radius:5px;}
+.r-del{background:none;border:none;cursor:pointer;color:var(--muted);padding:5px;border-radius:6px;transition:all .2s;font-size:16px;line-height:1;}
+.r-del:hover{color:var(--lost);}
+
+/* ══ PIPELINE ══ */
+.pipeline-board{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;min-height:400px;}
+.pipeline-col{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:14px;}
+.pipeline-col-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.pipeline-col-title{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;}
+.pipeline-count{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;font-family:'Syne',sans-serif;}
+.pipeline-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;transition:all .2s;}
+.pipeline-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.15);box-shadow:0 6px 20px rgba(0,0,0,.3);}
+.pc-name{font-size:12.5px;font-weight:600;color:#fff;margin-bottom:3px;}
+.pc-company{font-size:11px;color:var(--muted);}
+.pc-score{margin-top:8px;font-size:11px;font-weight:700;color:var(--teal);}
+
+/* ══ AI CHAT ══ */
+.ai-insights-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+.insight-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;}
+.insight-icon{font-size:28px;margin-bottom:10px;}
+.insight-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;}
+.insight-text{font-size:12.5px;color:var(--muted2);line-height:1.6;}
+.ai-chat-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;}
+.chat-messages{min-height:200px;max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;margin-bottom:14px;padding-right:4px;}
+.chat-messages::-webkit-scrollbar{width:4px;}
+.chat-messages::-webkit-scrollbar-track{background:transparent;}
+.chat-messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
+.chat-msg{padding:10px 14px;border-radius:10px;font-size:13px;line-height:1.6;max-width:85%;white-space:pre-line;}
+.chat-msg.ai{background:rgba(0,201,167,.1);border:1px solid rgba(0,201,167,.2);color:var(--text);align-self:flex-start;border-radius:4px 10px 10px 10px;}
+.chat-msg.user{background:rgba(255,255,255,.08);color:var(--text);align-self:flex-end;border-radius:10px 4px 10px 10px;}
+.chat-msg.typing-msg{background:rgba(0,201,167,.07);border:1px solid rgba(0,201,167,.15);align-self:flex-start;border-radius:4px 10px 10px 10px;padding:12px 16px;}
+.typing-dots{display:flex;gap:5px;}
+.typing-dots span{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:typeBlink 1.2s ease infinite;}
+.typing-dots span:nth-child(2){animation-delay:.2s;}
+.typing-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes typeBlink{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1.2)}}
+.chat-input-row{display:flex;gap:9px;}
+.chat-input{flex:1;padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+.chat-input:focus{border-color:rgba(0,201,167,.45);}
+.chat-input::placeholder{color:var(--muted);}
+.chat-source{font-size:10px;color:var(--muted);text-align:right;margin-top:6px;}
+
+/* ══ SETTINGS ══ */
+.settings-section{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;}
+.settings-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:16px;}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
+.setting-row:last-child{border-bottom:none;padding-bottom:0;}
+.s-name{font-size:13px;font-weight:600;color:#fff;}
+.s-desc{font-size:11.5px;color:var(--muted);margin-top:2px;}
+.toggle{position:relative;width:42px;height:24px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-slider{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:99px;cursor:pointer;border:1px solid var(--border);transition:all .3s;}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:2px;top:50%;transform:translateY(-50%);background:#fff;border-radius:50%;transition:transform .3s;}
+.toggle input:checked + .toggle-slider{background:var(--teal);border-color:var(--teal);}
+.toggle input:checked + .toggle-slider::before{transform:translate(18px,-50%);}
+.api-url-box{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:9px;padding:10px 13px;font-size:12px;color:var(--muted2);font-family:monospace;margin-top:10px;}
+
+/* ══ TOAST ══ */
+.toast{position:fixed;bottom:26px;right:26px;z-index:300;background:var(--card2);border:1px solid rgba(0,201,167,.3);border-radius:12px;padding:13px 17px;display:flex;align-items:center;gap:9px;box-shadow:0 8px 32px rgba(0,0,0,.45);transform:translateY(60px);opacity:0;transition:all .4s cubic-bezier(.23,1,.32,1);max-width:340px;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast-text{font-size:13px;font-weight:500;}
+
+/* ══ LOADING ══ */
+.loading{text-align:center;padding:40px;color:var(--muted);font-size:13px;}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid rgba(0,201,167,.2);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:40px;color:var(--muted);font-size:13px;}
+.empty-icon{font-size:36px;margin-bottom:10px;opacity:.4;}
+
+/* ══ AI BAR ══ */
+.ai-bar{position:fixed;bottom:0;left:var(--sidebar);right:0;z-index:50;background:rgba(9,14,24,.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:10px;}
+.ai-bar-icon{font-size:18px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.ai-input{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:9px;padding:8px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+.ai-input:focus{border-color:rgba(0,201,167,.4);}
+.ai-input::placeholder{color:var(--muted);}
+.ai-send-btn{padding:8px 16px;border-radius:9px;border:none;background:linear-gradient(135deg,var(--teal),var(--teal-dim));color:#000;font-weight:700;font-size:12.5px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.ai-send-btn:hover{transform:scale(1.04);box-shadow:0 4px 14px var(--teal-glow);}
+
+@media(max-width:900px){
+  :root{--sidebar:0px}
+  .sidebar{display:none}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .mid-row{grid-template-columns:1fr}
+  .leads-header,.lead-row{grid-template-columns:2fr 1fr 1fr 72px}
+  .col-company,.col-phone{display:none}
+  .pipeline-board{grid-template-columns:repeat(2,1fr)}
+  .ai-insights-grid{grid-template-columns:1fr}
+  .ai-bar{left:0}
+}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="bg-dots"></div>
+
+<!-- ══════════ LOGIN SCREEN ══════════ -->
+<div class="login-screen" id="loginScreen">
+  <div class="bg-mesh"></div>
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">⚡</div>
+      <div class="login-logo-text">Nova<span>CRM</span></div>
+    </div>
+    <div class="login-title">Welcome back</div>
+    <div class="login-sub">Sign in to your CRM dashboard</div>
+    <div class="login-group">
+      <label class="login-label">Email</label>
+      <input class="login-input" id="loginEmail" type="email" placeholder="admin@novacrm.app" value="admin@novacrm.app">
+    </div>
+    <div class="login-group">
+      <label class="login-label">Password</label>
+      <input class="login-input" id="loginPassword" type="password" placeholder="••••••••" value="Admin@123" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()" id="loginBtn">Sign In →</button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-hint">Default: <code>admin@novacrm.app</code> / <code>Admin@123</code></div>
+  </div>
+</div>
+
+<!-- ══════════ MAIN APP ══════════ -->
+<div class="app" id="mainApp">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div class="logo-text">Nova<span>CRM</span></div>
+    </div>
+
+    <div class="nav-label">Main</div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)">📊 Dashboard</div>
+    <div class="nav-item" onclick="showPage('leads',this)">👥 Leads <span class="nav-badge" id="sideCount">0</span></div>
+    <div class="nav-item" onclick="showPage('reminders',this)">🔔 Reminders</div>
+    <div class="nav-item" onclick="showPage('pipeline',this)">📋 Pipeline</div>
+
+    <div class="nav-label" style="margin-top:8px">Intelligence</div>
+    <div class="nav-item" onclick="showPage('ai',this)">🤖 AI Insights</div>
+    <div class="nav-item" onclick="showPage('settings',this)">⚙️ Settings</div>
+
+    <div class="sidebar-bottom">
+      <div class="user-row">
+        <div class="user-avatar" id="sideUserAvatar">AD</div>
+        <div>
+          <div class="user-name" id="sideUserName">Admin</div>
+          <div class="user-role">Connected to API ✅</div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()" title="Logout">↩</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="page active" id="page-dashboard">
+      <div class="topbar">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-sub" id="liveDate"></div>
+        </div>
+        <div class="topbar-right">
+          <button class="btn btn-ghost" onclick="showPage('reminders',document.querySelectorAll('.nav-item')[2])">🔔 Reminders</button>
+          <button class="btn btn-primary" onclick="openLeadModal()">＋ Add Lead</button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card" style="animation-delay:.08s">
+          <div class="stat-icon">👥</div><div class="stat-label">Total Leads</div>
+          <div class="stat-value v-white" id="statTotal">—</div>
+          <div class="stat-delta">Active pipeline</div>
+          <div class="stat-bar"><div class="stat-fill" style="width:100%;background:linear-gradient(90deg,#fff,#aaa)"></div></div>
+        </div>
+        <div class="stat-card" style="animation-delay:.13s">
+          <div class="stat-icon">🆕</div><div class="stat-label">New</div>
+          <div class="stat-value v-new" id="statNew">—</div>
+          <div class="stat-delta" style="color:var(--new)">Awaiting contact</div>
+          <div class="stat-bar"><div class="stat-fill" id="barNew" style="background:linear-gradient(90deg,var(--new),#7fb3ff)"></div></div>
+        </div>
+        <div class="stat-card" style="animation-delay:.18s">
+          <div class="stat-icon">📞</div><div class="stat-label">Contacted</div>
+          <div class="stat-value v-contacted" id="statContacted">—</div>
+          <div class="stat-delta" style="color:var(--contacted)">In follow-up</div>
+          <div class="stat-bar"><div class="stat-fill" id="barContacted" style="background:linear-gradient(90deg,var(--contacted),#ffd280)"></div></div>
+        </div>
+        <div class="stat-card" style="animation-delay:.23s">
+          <div class="stat-icon">✅</div><div class="stat-label">Qualified</div>
+          <div class="stat-value v-qualified" id="statQualified">—</div>
+          <div class="stat-delta" style="color:var(--qualified)">Ready to close</div>
+          <div class="stat-bar"><div class="stat-fill" id="barQualified" style="background:linear-gradient(90deg,var(--qualified),#c4a8ff)"></div></div>
+        </div>
+        <div class="stat-card" style="animation-delay:.28s">
+          <div class="stat-icon">🎉</div><div class="stat-label">Converted</div>
+          <div class="stat-value v-converted" id="statConverted">—</div>
+          <div class="stat-delta">Closed won</div>
+          <div class="stat-bar"><div class="stat-fill" id="barConverted" style="background:linear-gradient(90deg,var(--teal),#80ffe8)"></div></div>
+        </div>
+      </div>
+
+      <div class="mid-row">
+        <div class="chart-card">
+          <div class="card-header"><div class="card-title">📊 Sales Pipeline</div><span class="chip chip-teal">Live DB</span></div>
+          <div class="funnel">
+            <div class="funnel-row"><div class="funnel-label">New</div><div class="funnel-bar-wrap"><div class="funnel-fill" id="fNew" style="background:linear-gradient(90deg,var(--new),#7fb3ff)"></div></div><div class="funnel-count" id="fcNew">0</div></div>
+            <div class="funnel-row"><div class="funnel-label">Contacted</div><div class="funnel-bar-wrap"><div class="funnel-fill" id="fContacted" style="background:linear-gradient(90deg,var(--contacted),#ffd280)"></div></div><div class="funnel-count" id="fcContacted">0</div></div>
+            <div class="funnel-row"><div class="funnel-label">Qualified</div><div class="funnel-bar-wrap"><div class="funnel-fill" id="fQualified" style="background:linear-gradient(90deg,var(--qualified),#c4a8ff)"></div></div><div class="funnel-count" id="fcQualified">0</div></div>
+            <div class="funnel-row"><div class="funnel-label">Converted</div><div class="funnel-bar-wrap"><div class="funnel-fill" id="fConverted" style="background:linear-gradient(90deg,var(--teal),#80ffe8)"></div></div><div class="funnel-count" id="fcConverted">0</div></div>
+            <div class="funnel-row"><div class="funnel-label">Lost</div><div class="funnel-bar-wrap"><div class="funnel-fill" id="fLost" style="background:linear-gradient(90deg,var(--lost),#ff8fa0)"></div></div><div class="funnel-count" id="fcLost">0</div></div>
+          </div>
+        </div>
+        <div class="ai-card">
+          <div class="card-header"><div class="card-title">🤖 AI Health</div><span class="chip chip-purple">AI</span></div>
+          <div class="score-ring-wrap">
+            <div class="score-ring">
+              <svg width="76" height="76" viewBox="0 0 76 76"><circle class="ring-track" cx="38" cy="38" r="33"/><circle class="ring-fill" cx="38" cy="38" r="33"/></svg>
+              <div class="score-text"><div class="score-num" id="healthScore">—</div><div class="score-sub">/100</div></div>
+            </div>
+            <div>
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13.5px;color:#fff">Pipeline Health</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5" id="healthDesc">Loading…</div>
+            </div>
+          </div>
+          <div class="ai-tips">
+            <div class="ai-tip">💡 <div><b>Tip:</b> Contact new leads within 24h — boosts conversion 3×</div></div>
+            <div class="ai-tip">⚡ <div><b>Action:</b> Add notes after every call</div></div>
+            <div class="ai-tip">📅 <div><b>Reminder:</b> Set follow-up dates when saving reminders — we'll auto-SMS!</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" id="searchInput" placeholder="Search leads…" oninput="filterLeads()"></div>
+        <select class="filter-select" id="statusFilter" onchange="filterLeads()">
+          <option value="">All Status</option><option>New</option><option>Contacted</option><option>Qualified</option><option>Converted</option><option>Lost</option>
+        </select>
+        <button class="btn btn-primary" onclick="openLeadModal()">＋ Add Lead</button>
+      </div>
+      <div class="leads-card">
+        <div class="leads-header"><div>Lead</div><div class="col-company">Company</div><div class="col-phone">Phone</div><div>Status</div><div>Score</div><div>Actions</div></div>
+        <div id="leadsBody"><div class="loading"><span class="spinner"></span>Loading leads…</div></div>
+      </div>
+    </div>
+
+    <!-- ── LEADS PAGE ── -->
+    <div class="page" id="page-leads">
+      <div class="topbar">
+        <div><div class="page-title">All Leads</div><div class="page-sub">Complete lead database from MongoDB</div></div>
+        <div class="topbar-right"><button class="btn btn-primary" onclick="openLeadModal()">＋ Add Lead</button></div>
+      </div>
+      <div class="controls">
+        <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" id="searchInput2" placeholder="Search leads…" oninput="filterLeads2()"></div>
+        <select class="filter-select" id="statusFilter2" onchange="filterLeads2()">
+          <option value="">All Status</option><option>New</option><option>Contacted</option><option>Qualified</option><option>Converted</option><option>Lost</option>
+        </select>
+      </div>
+      <div class="leads-card">
+        <div class="leads-header"><div>Lead</div><div class="col-company">Company</div><div class="col-phone">Phone</div><div>Status</div><div>Score</div><div>Actions</div></div>
+        <div id="leadsBody2"><div class="loading"><span class="spinner"></span>Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- ── REMINDERS PAGE ── -->
+    <div class="page" id="page-reminders">
+      <div class="topbar">
+        <div><div class="page-title">🔔 Reminders</div><div class="page-sub">Auto-SMS customer + admin on save</div></div>
+        <div class="topbar-right"><button class="btn btn-primary" onclick="submitReminder()">＋ Add & Notify</button></div>
+      </div>
+      <div class="reminder-form-card">
+        <div class="card-header"><div class="card-title">New Reminder</div><span class="chip chip-teal">Auto-Notifies on Save</span></div>
+        <div class="form-row" style="margin-bottom:12px">
+          <div class="form-group" style="margin:0"><label class="form-label">Title</label><input class="form-input" id="rTitle" placeholder="Meeting with Priya"></div>
+          <div class="form-group" style="margin:0"><label class="form-label">Description</label><input class="form-input" id="rDesc" placeholder="Discuss proposal..."></div>
+        </div>
+        <div class="form-row" style="margin-bottom:12px">
+          <div class="form-group" style="margin:0"><label class="form-label">Date</label><input class="form-input" type="date" id="rDate"></div>
+          <div class="form-group" style="margin:0"><label class="form-label">Time</label><input class="form-input" type="time" id="rTime" value="10:00"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="margin:0"><label class="form-label">Link to Lead (for auto-SMS)</label><select class="form-select" id="rLead"><option value="">— Select lead —</option></select></div>
+          <div class="form-group" style="margin:0"><label class="form-label">Priority</label><select class="form-select" id="rPriority"><option value="High">🔴 High</option><option value="Medium" selected>🟡 Medium</option><option value="Low">🟢 Low</option></select></div>
+        </div>
+        <div class="notif-banner">
+          🔔 <div>When you add a reminder and link a lead with a phone number, we'll <b>automatically SMS the customer</b> the meeting details AND <b>SMS/email you</b> (admin) the reminder notification.</div>
+        </div>
+      </div>
+      <div class="reminders-list" id="remindersList"><div class="loading"><span class="spinner"></span>Loading reminders…</div></div>
+    </div>
+
+    <!-- ── PIPELINE ── -->
+    <div class="page" id="page-pipeline">
+      <div class="topbar">
+        <div><div class="page-title">📋 Pipeline Board</div><div class="page-sub">Click any card to edit the lead</div></div>
+      </div>
+      <div class="pipeline-board" id="pipelineBoard"><div class="loading"><span class="spinner"></span>Loading pipeline…</div></div>
+    </div>
+
+    <!-- ── AI INSIGHTS ── -->
+    <div class="page" id="page-ai">
+      <div class="topbar">
+        <div><div class="page-title">🤖 AI Insights</div><div class="page-sub">Powered by Claude AI + Live MongoDB data</div></div>
+        <span class="chip chip-purple" id="aiSourceChip">AI Ready</span>
+      </div>
+      <div class="ai-insights-grid">
+        <div class="insight-card"><div class="insight-icon">📈</div><div class="insight-title">Conversion Forecast</div><div class="insight-text" id="insightForecast">Loading…</div></div>
+        <div class="insight-card"><div class="insight-icon">⏰</div><div class="insight-title">Best Time to Contact</div><div class="insight-text">AI recommends <strong style="color:var(--new)">10 AM–12 PM</strong> and <strong style="color:var(--new)">3 PM–5 PM</strong> for highest response rates.</div></div>
+        <div class="insight-card"><div class="insight-icon">⭐</div><div class="insight-title">Top Lead</div><div class="insight-text" id="insightTop">Loading…</div></div>
+        <div class="insight-card"><div class="insight-icon">⚠️</div><div class="insight-title">Pipeline Risk</div><div class="insight-text" id="insightRisk">Loading…</div></div>
+      </div>
+      <div class="ai-chat-box">
+        <div class="card-header"><div class="card-title">💬 AI Chat (uses live DB data)</div><span class="chip chip-teal" id="aiModelChip">Connecting…</span></div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-msg ai">👋 Hi! I'm your NovaCRM AI, connected to your live database. Ask me:\n• "Who needs follow-up?"\n• "Summarize my pipeline"\n• "Who is my top lead?"\n• "Give me a sales tip"</div>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="chatInput" placeholder="Ask AI about your leads…" onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="btn btn-primary" onclick="sendChat()" style="padding:9px 14px;">Send ↑</button>
+        </div>
+        <div class="chat-source" id="chatSource"></div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div class="page" id="page-settings">
+      <div class="topbar"><div><div class="page-title">⚙️ Settings</div><div class="page-sub">Configure NovaCRM backend connection</div></div></div>
+      <div class="settings-section">
+        <div class="settings-title">🔗 Backend API Connection</div>
+        <div class="setting-row">
+          <div><div class="s-name">API Base URL</div><div class="s-desc">Your Node.js backend address</div></div>
+        </div>
+        <input class="form-input" id="settingApiUrl" value="http://localhost:5000/api" style="margin-top:10px;width:100%;padding:10px 13px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:monospace;font-size:13px;outline:none;">
+        <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="saveApiUrl()">Save & Test Connection</button>
+        <div class="api-url-box" id="connStatus">Status: Testing…</div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">📱 Notification Setup</div>
+        <div class="setting-row"><div><div class="s-name">Auto-SMS Customer on Reminder</div><div class="s-desc">Send meeting SMS to lead's phone number</div></div><label class="toggle"><input type="checkbox" checked><div class="toggle-slider"></div></label></div>
+        <div class="setting-row"><div><div class="s-name">Admin SMS Notification</div><div class="s-desc">SMS to your (admin) phone on each reminder</div></div><label class="toggle"><input type="checkbox" checked><div class="toggle-slider"></div></label></div>
+        <div class="setting-row"><div><div class="s-name">Email Customer on Reminder</div><div class="s-desc">Send formatted HTML email to lead</div></div><label class="toggle"><input type="checkbox" checked><div class="toggle-slider"></div></label></div>
+        <div class="setting-row"><div><div class="s-name">Daily Morning Summary</div><div class="s-desc">SMS digest of today's meetings at 9 AM</div></div><label class="toggle"><input type="checkbox"><div class="toggle-slider"></div></label></div>
+        <div style="margin-top:14px;font-size:12px;color:var(--muted)">
+          ⚙️ Configure Twilio + Email credentials in your backend <code style="background:rgba(255,255,255,.07);padding:2px 6px;border-radius:4px">.env</code> file. See the setup guide below.
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">🗑️ Danger Zone</div>
+        <div class="setting-row">
+          <div><div class="s-name">Clear All Leads</div><div class="s-desc">Permanently delete all leads from MongoDB</div></div>
+          <button class="btn btn-danger btn-sm" onclick="clearAllLeads()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── LEAD MODAL ── -->
+<div class="modal-overlay" id="leadModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="leadModalTitle">➕ Add New Lead</div>
+      <button class="close-btn" onclick="closeLeadModal()">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">First Name *</label><input class="form-input" id="fName" placeholder="Priya"></div>
+      <div class="form-group"><label class="form-label">Last Name</label><input class="form-input" id="fLast" placeholder="Sharma"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Email *</label><input class="form-input" id="fEmail" placeholder="priya@example.com"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Phone (for SMS)</label><input class="form-input" id="fPhone" placeholder="+91 98765 43210"></div>
+      <div class="form-group"><label class="form-label">Company</label><input class="form-input" id="fCompany" placeholder="TechWave"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Status</label>
+        <select class="form-select" id="fStatus"><option>New</option><option>Contacted</option><option>Qualified</option><option>Converted</option><option>Lost</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Source</label>
+        <select class="form-select" id="fSource"><option>Website</option><option>Referral</option><option>Social Media</option><option>Cold Call</option><option>Email</option><option>Other</option></select>
+      </div>
+    </div>
+    <div class="notif-banner" id="smsNotifBanner" style="display:none">
+      📱 <div>A <b>welcome SMS</b> will be sent to this number when the lead is saved!</div>
+    </div>
+
+    <!-- Notes section (only in edit mode) -->
+    <div class="notes-section" id="notesSection" style="display:none">
+      <div class="notes-title">📝 Notes</div>
+      <div id="notesList"></div>
+      <div class="add-note-row">
+        <input type="text" id="noteInput" placeholder="Add a note…" onkeydown="if(event.key==='Enter')addNote()">
+        <button class="add-note-btn" onclick="addNote()">Add Note</button>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeLeadModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveLead()" id="saveLeadBtn">🚀 Save Lead</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span id="toastIcon">✅</span><span class="toast-text" id="toastMsg">Done!</span></div>
+
+<!-- AI BAR -->
+<div class="ai-bar">
+  <span class="ai-bar-icon">🤖</span>
+  <input class="ai-input" id="aiBarInput" placeholder="Quick AI: 'Who needs follow-up?', 'Pipeline summary', 'Top lead?'…" onkeydown="if(event.key==='Enter')sendAIBar()">
+  <button class="ai-send-btn" onclick="sendAIBar()">Ask AI ↑</button>
+</div>
+
+<script>
+// ════════════ CONFIG ════════════
+let API_URL = localStorage.getItem('novacrm_api') || 'http://localhost:5000/api';
+let TOKEN = localStorage.getItem('novacrm_token') || '';
+let ALL_LEADS = [];
+let currentEditId = null;
+
+// ════════════ API HELPER ════════════
+async function api(method, path, body = null) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    const res = await fetch(API_URL + path, opts);
+    const data = await res.json();
+    if (res.status === 401 || res.status === 403) { doLogout(); return null; }
+    return data;
+  } catch (err) {
+    console.error('[API ERROR]', err.message);
+    return null;
+  }
+}
+
+// ════════════ LOGIN ════════════
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPassword').value.trim();
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginError');
+  err.style.display = 'none';
+  btn.textContent = 'Signing in…';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(API_URL + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
+    if (data.success) {
+      TOKEN = data.token;
+      localStorage.setItem('novacrm_token', TOKEN);
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('mainApp').classList.add('visible');
+      if (data.admin?.email) {
+        document.getElementById('sideUserName').textContent = data.admin.email.split('@')[0];
+        document.getElementById('sideUserAvatar').textContent = data.admin.email.slice(0, 2).toUpperCase();
+      }
+      initApp();
+    } else {
+      err.textContent = data.message || 'Login failed';
+      err.style.display = 'block';
+    }
+  } catch (e) {
+    err.textContent = '❌ Cannot connect to backend. Is the server running at ' + API_URL + '?';
+    err.style.display = 'block';
+  }
+  btn.textContent = 'Sign In →';
+  btn.disabled = false;
+}
+
+function doLogout() {
+  TOKEN = '';
+  localStorage.removeItem('novacrm_token');
+  document.getElementById('mainApp').classList.remove('visible');
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+// Auto-login if token exists
+async function checkAuth() {
+  if (!TOKEN) return;
+  const data = await api('GET', '/auth/me');
+  if (data?.success) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').classList.add('visible');
+    if (data.admin?.email) {
+      document.getElementById('sideUserName').textContent = data.admin.email.split('@')[0];
+      document.getElementById('sideUserAvatar').textContent = data.admin.email.slice(0, 2).toUpperCase();
+    }
+    initApp();
+  } else {
+    TOKEN = '';
+    localStorage.removeItem('novacrm_token');
+  }
+}
+
+// ════════════ INIT APP ════════════
+async function initApp() {
+  updateDate();
+  setInterval(updateDate, 1000);
+  await loadLeads();
+  document.getElementById('rDate').value = new Date().toISOString().split('T')[0];
+  testConnection();
+}
+
+// ════════════ NAVIGATION ════════════
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  if (id === 'reminders') loadReminders();
+  if (id === 'pipeline') renderPipeline();
+  if (id === 'ai') updateInsights();
+  if (id === 'leads') renderTable(ALL_LEADS, 'leadsBody2');
+}
+
+// ════════════ LEADS ════════════
+async function loadLeads() {
+  const data = await api('GET', '/leads');
+  if (!data) {
+    showToast('❌ Cannot load leads — is backend running?', true);
+    document.getElementById('leadsBody').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>Cannot connect to backend at <code>${API_URL}</code></div>`;
+    return;
+  }
+  ALL_LEADS = data.leads || [];
+  updateStats(data.stats || {});
+  filterLeads();
+  updateLeadDropdown();
+}
+
+function renderTable(list, bodyId) {
+  const body = document.getElementById(bodyId);
+  if (!body) return;
+  if (!list.length) {
+    body.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div>No leads found. Add your first lead!</div>`;
+    return;
+  }
+  const AVG = ['#4f8ef7','#f4a532','#9b6dff','#00C9A7','#ff5a72','#00bcd4'];
+  body.innerHTML = list.map((l, i) => `
+    <div class="lead-row" style="animation-delay:${i * .04}s">
+      <div class="lead-name-wrap">
+        <div class="avatar" style="background:${AVG[i % AVG.length]};color:#fff">${(l.name||'??').slice(0,2).toUpperCase()}</div>
+        <div><div class="lead-name">${l.name}</div><div class="lead-email">${l.email}</div></div>
+      </div>
+      <div class="col-company lead-company">${l.company || '—'}</div>
+      <div class="col-phone lead-phone">${l.phone || '—'}</div>
+      <div><span class="status-badge s-${(l.status||'new').toLowerCase()}"><span class="status-dot"></span>${l.status}</span></div>
+      <div><span class="score-pill">⚡ ${l.score}</span></div>
+      <div class="action-btns">
+        <button class="act-btn" onclick="openLeadModal('${l._id}')" title="Edit">✏️</button>
+        <button class="act-btn del" onclick="deleteLead('${l._id}')" title="Delete">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+function filterLeads() {
+  const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  const s = document.getElementById('statusFilter')?.value || '';
+  const filtered = ALL_LEADS.filter(l =>
+    (!q || [l.name, l.email, l.company, l.phone].some(v => (v || '').toLowerCase().includes(q))) &&
+    (!s || l.status === s)
+  );
+  renderTable(filtered, 'leadsBody');
+}
+function filterLeads2() {
+  const q = (document.getElementById('searchInput2')?.value || '').toLowerCase();
+  const s = document.getElementById('statusFilter2')?.value || '';
+  const filtered = ALL_LEADS.filter(l =>
+    (!q || [l.name, l.email, l.company, l.phone].some(v => (v || '').toLowerCase().includes(q))) &&
+    (!s || l.status === s)
+  );
+  renderTable(filtered, 'leadsBody2');
+}
+
+function updateStats(counts) {
+  const total = ALL_LEADS.length;
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statNew').textContent = counts.New || 0;
+  document.getElementById('statContacted').textContent = counts.Contacted || 0;
+  document.getElementById('statQualified').textContent = counts.Qualified || 0;
+  document.getElementById('statConverted').textContent = counts.Converted || 0;
+  document.getElementById('sideCount').textContent = total;
+
+  const max = Math.max(...Object.values(counts), 1);
+  ['New','Contacted','Qualified','Converted','Lost'].forEach(s => {
+    const c = counts[s] || 0;
+    const f = document.getElementById('f' + s);
+    const fc = document.getElementById('fc' + s);
+    if (f) { f.style.width = Math.round(c / max * 100) + '%'; f.textContent = c > 0 ? c : ''; }
+    if (fc) fc.textContent = c;
+    const bar = document.getElementById('bar' + s);
+    if (bar) bar.style.width = (total ? Math.round(c / total * 100) : 0) + '%';
+  });
+
+  // Health score
+  const converted = counts.Converted || 0;
+  const rate = total ? Math.round(converted / total * 100) : 0;
+  const score = Math.min(100, 50 + rate + (total > 5 ? 10 : 0));
+  document.getElementById('healthScore').textContent = score;
+  document.getElementById('healthDesc').innerHTML = `${total} leads active<br>${counts.New || 0} need contact`;
+}
+
+// ════════════ LEAD MODAL ════════════
+async function openLeadModal(id = null) {
+  currentEditId = id;
+  const modal = document.getElementById('leadModal');
+  document.getElementById('leadModalTitle').textContent = id ? '✏️ Edit Lead' : '➕ Add New Lead';
+  document.getElementById('notesSection').style.display = id ? 'block' : 'none';
+  document.getElementById('smsNotifBanner').style.display = 'none';
+  ['fName','fLast','fEmail','fPhone','fCompany'].forEach(f => document.getElementById(f).value = '');
+  document.getElementById('fStatus').value = 'New';
+  document.getElementById('fSource').value = 'Website';
+
+  if (id) {
+    const data = await api('GET', '/leads/' + id);
+    if (data?.lead) {
+      const l = data.lead;
+      const parts = l.name.split(' ');
+      document.getElementById('fName').value = parts[0] || '';
+      document.getElementById('fLast').value = parts.slice(1).join(' ');
+      document.getElementById('fEmail').value = l.email || '';
+      document.getElementById('fPhone').value = l.phone || '';
+      document.getElementById('fCompany').value = l.company || '';
+      document.getElementById('fStatus').value = l.status || 'New';
+      document.getElementById('fSource').value = l.source || 'Other';
+      renderNotes(l.notes || []);
+    }
+  }
+
+  // Show SMS banner when phone is typed
+  document.getElementById('fPhone').addEventListener('input', function () {
+    document.getElementById('smsNotifBanner').style.display = this.value.trim() && !id ? 'flex' : 'none';
+  });
+
+  modal.classList.add('open');
+  setTimeout(() => document.getElementById('fName').focus(), 300);
+}
+
+function closeLeadModal() { document.getElementById('leadModal').classList.remove('open'); }
+
+async function saveLead() {
+  const fn = document.getElementById('fName').value.trim();
+  const ln = document.getElementById('fLast').value.trim();
+  const em = document.getElementById('fEmail').value.trim();
+  if (!fn || !em) { showToast('⚠️ Name and email are required!', true); return; }
+
+  const body = {
+    name: `${fn} ${ln}`.trim(), email: em,
+    phone: document.getElementById('fPhone').value.trim(),
+    company: document.getElementById('fCompany').value.trim(),
+    status: document.getElementById('fStatus').value,
+    source: document.getElementById('fSource').value
+  };
+
+  document.getElementById('saveLeadBtn').textContent = 'Saving…';
+  const data = currentEditId
+    ? await api('PUT', '/leads/' + currentEditId, body)
+    : await api('POST', '/leads', body);
+
+  document.getElementById('saveLeadBtn').textContent = '🚀 Save Lead';
+
+  if (data?.success) {
+    closeLeadModal();
+    await loadLeads();
+    const sms = data.notifications?.smsSent;
+    showToast(currentEditId
+      ? '✅ Lead updated!'
+      : `🚀 Lead added!${sms ? ' 📱 Welcome SMS sent!' : ''}`
+    );
+  } else {
+    showToast('❌ ' + (data?.message || 'Error saving lead'), true);
+  }
+}
+
+async function deleteLead(id) {
+  if (!confirm('Delete this lead?')) return;
+  const data = await api('DELETE', '/leads/' + id);
+  if (data?.success) { await loadLeads(); showToast('🗑️ Lead deleted'); }
+  else showToast('❌ Error deleting lead', true);
+}
+
+async function clearAllLeads() {
+  if (!confirm('Delete ALL leads from database? This cannot be undone!')) return;
+  const data = await api('DELETE', '/leads');
+  if (data?.success) { await loadLeads(); showToast('🗑️ All leads cleared'); }
+}
+
+// ════════════ NOTES ════════════
+function renderNotes(notes) {
+  const list = document.getElementById('notesList');
+  if (!notes.length) { list.innerHTML = '<div style="font-size:12px;color:var(--muted);margin-bottom:8px">No notes yet.</div>'; return; }
+  list.innerHTML = notes.map(n => `
+    <div class="note-item">
+      ${n.text}
+      <div class="note-date">${new Date(n.createdAt).toLocaleDateString('en-IN')}</div>
+    </div>`).join('');
+}
+
+async function addNote() {
+  if (!currentEditId) return;
+  const text = document.getElementById('noteInput').value.trim();
+  if (!text) return;
+  const data = await api('POST', `/leads/${currentEditId}/notes`, { text });
+  if (data?.success) {
+    document.getElementById('noteInput').value = '';
+    renderNotes(data.lead.notes);
+    showToast('📝 Note added!');
+  }
+}
+
+// ════════════ REMINDERS ════════════
+function updateLeadDropdown() {
+  const sel = document.getElementById('rLead');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Select lead —</option>' +
+    ALL_LEADS.map(l => `<option value="${l._id}" data-phone="${l.phone || ''}">${l.name}${l.phone ? ' 📱' : ''}</option>`).join('');
+}
+
+async function loadReminders() {
+  const data = await api('GET', '/reminders');
+  if (!data) return;
+  renderReminders(data.reminders || []);
+}
+
+async function submitReminder() {
+  const title = document.getElementById('rTitle').value.trim();
+  const date = document.getElementById('rDate').value;
+  if (!title || !date) { showToast('⚠️ Title and date required!', true); return; }
+
+  const leadSel = document.getElementById('rLead');
+  const leadId = leadSel.value;
+
+  document.querySelector('.topbar-right .btn-primary').textContent = 'Sending…';
+  const data = await api('POST', '/reminders', {
+    title,
+    description: document.getElementById('rDesc').value.trim(),
+    dueDate: date,
+    dueTime: document.getElementById('rTime').value || '09:00',
+    leadId: leadId || undefined,
+    priority: document.getElementById('rPriority').value
+  });
+  document.querySelector('.topbar-right .btn-primary').textContent = '＋ Add & Notify';
+
+  if (data?.success) {
+    document.getElementById('rTitle').value = '';
+    document.getElementById('rDesc').value = '';
+    await loadReminders();
+
+    const n = data.notifications;
+    const smsSent = n?.customer?.sms?.success || n?.customer?.sms?.mock;
+    const adminSMS = n?.admin?.sms?.success || n?.admin?.sms?.mock;
+    showToast(`🔔 Reminder saved!${smsSent ? ' 📱 Customer SMS sent!' : ''}${adminSMS ? ' 👤 Admin notified!' : ''}`);
+  } else {
+    showToast('❌ ' + (data?.message || 'Error'), true);
+  }
+}
+
+function renderReminders(reminders) {
+  const list = document.getElementById('remindersList');
+  if (!reminders.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🔔</div>No reminders yet. Add one above!</div>`;
+    return;
+  }
+  const pc = { High: 'rgba(255,90,114,.15)', Medium: 'rgba(244,165,50,.12)', Low: 'rgba(0,201,167,.1)' };
+  const tc = { High: 'var(--lost)', Medium: 'var(--contacted)', Low: 'var(--teal)' };
+  list.innerHTML = reminders.map(r => `
+    <div class="reminder-item ${r.done ? 'done' : ''}">
+      <div class="r-check ${r.done ? 'checked' : ''}" onclick="toggleReminder('${r._id}', ${!r.done})">${r.done ? '✓' : ''}</div>
+      <div class="r-body">
+        <div class="r-title">${r.title}</div>
+        <div class="r-meta">
+          ${r.dueDate ? `📅 ${new Date(r.dueDate).toLocaleDateString('en-IN')} ${r.dueTime ? 'at ' + r.dueTime : ''} ` : ''}
+          ${r.leadName ? `· 👤 ${r.leadName} ` : ''}
+          <span class="r-tag" style="background:${pc[r.priority]};color:${tc[r.priority]}">${r.priority}</span>
+          ${r.smsSentToCustomer ? '<span class="r-notif">📱 SMS Sent</span>' : ''}
+          ${r.emailSentToCustomer ? '<span class="r-notif">📧 Email Sent</span>' : ''}
+        </div>
+      </div>
+      <button class="r-del" onclick="deleteReminder('${r._id}')">✕</button>
+    </div>`).join('');
+}
+
+async function toggleReminder(id, done) {
+  await api('PUT', '/reminders/' + id, { done });
+  loadReminders();
+}
+
+async function deleteReminder(id) {
+  await api('DELETE', '/reminders/' + id);
+  loadReminders();
+  showToast('🗑️ Reminder deleted');
+}
+
+// ════════════ PIPELINE ════════════
+const STAGES = ['New','Contacted','Qualified','Converted','Lost'];
+const SC = { New:'var(--new)',Contacted:'var(--contacted)',Qualified:'var(--qualified)',Converted:'var(--teal)',Lost:'var(--lost)' };
+const SB = { New:'rgba(79,142,247,.15)',Contacted:'rgba(244,165,50,.12)',Qualified:'rgba(155,109,255,.12)',Converted:'rgba(0,201,167,.12)',Lost:'rgba(255,90,114,.12)' };
+
+function renderPipeline() {
+  const board = document.getElementById('pipelineBoard');
+  board.innerHTML = STAGES.map(stage => {
+    const sl = ALL_LEADS.filter(l => l.status === stage);
+    return `<div class="pipeline-col">
+      <div class="pipeline-col-header">
+        <div class="pipeline-col-title" style="color:${SC[stage]}">${stage}</div>
+        <div class="pipeline-count" style="background:${SB[stage]};color:${SC[stage]}">${sl.length}</div>
+      </div>
+      ${sl.map(l => `<div class="pipeline-card" onclick="openLeadModal('${l._id}')">
+        <div class="pc-name">${l.name}</div>
+        <div class="pc-company">${l.company || 'No company'}</div>
+        <div class="pc-score">⚡ ${l.score}/100</div>
+      </div>`).join('') || '<div style="text-align:center;padding:18px;font-size:11.5px;color:var(--muted)">Empty</div>'}
+    </div>`;
+  }).join('');
+}
+
+// ════════════ AI INSIGHTS ════════════
+function updateInsights() {
+  const counts = { New:0,Contacted:0,Qualified:0,Converted:0,Lost:0 };
+  ALL_LEADS.forEach(l => counts[l.status]++);
+  const total = ALL_LEADS.length;
+  const conv = counts.Converted;
+  const rate = total ? Math.round(conv / total * 100) : 0;
+
+  document.getElementById('insightForecast').innerHTML = `Conversion rate: <strong style="color:var(--teal)">${rate}%</strong> (${conv}/${total} leads). ${rate < 20 ? 'Move more leads to Qualified to improve.' : 'Great work!'}`;
+  const top = ALL_LEADS.slice().sort((a, b) => b.score - a.score)[0];
+  document.getElementById('insightTop').innerHTML = top ? `<strong style="color:var(--qualified)">${top.name} (${top.score}/100)</strong> — ${top.status} at ${top.company || 'Unknown'}. Prioritize now!` : 'No leads yet.';
+  document.getElementById('insightRisk').innerHTML = counts.New > 2 ? `⚠️ <strong style="color:var(--lost)">${counts.New} uncontacted leads</strong>. Response drops 60% after 48h!` : '✅ No leads at risk!';
+}
+
+// ════════════ AI CHAT ════════════
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const q = input.value.trim();
+  if (!q) return;
+  const msgs = document.getElementById('chatMessages');
+  msgs.innerHTML += `<div class="chat-msg user">${q}</div>`;
+  input.value = '';
+  // Typing indicator
+  const typingId = 'typing_' + Date.now();
+  msgs.innerHTML += `<div class="chat-msg typing-msg" id="${typingId}"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const data = await api('POST', '/ai/chat', { message: q });
+  document.getElementById(typingId)?.remove();
+
+  if (data?.success) {
+    msgs.innerHTML += `<div class="chat-msg ai">${data.reply}</div>`;
+    document.getElementById('chatSource').textContent = data.source === 'claude' ? '🤖 Powered by Claude AI' : '🧠 Local AI (add ANTHROPIC_API_KEY for Claude)';
+    document.getElementById('aiModelChip').textContent = data.source === 'claude' ? 'Claude AI' : 'Local AI';
+  } else {
+    msgs.innerHTML += `<div class="chat-msg ai">❌ AI unavailable. Is backend running at ${API_URL}?</div>`;
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendAIBar() {
+  const input = document.getElementById('aiBarInput');
+  const q = input.value.trim();
+  if (!q) return;
+  input.value = '';
+  const data = await api('POST', '/ai/chat', { message: q });
+  if (data?.success) showToast('🤖 ' + data.reply.slice(0, 100) + (data.reply.length > 100 ? '…' : ''));
+  else showToast('❌ AI unavailable', true);
+}
+
+// ════════════ SETTINGS ════════════
+function saveApiUrl() {
+  API_URL = document.getElementById('settingApiUrl').value.trim().replace(/\/$/, '');
+  localStorage.setItem('novacrm_api', API_URL);
+  testConnection();
+}
+
+async function testConnection() {
+  const box = document.getElementById('connStatus');
+  if (box) box.textContent = 'Testing connection…';
+  try {
+    const res = await fetch(API_URL + '/health');
+    const data = await res.json();
+    if (box) box.textContent = `✅ Connected! DB: ${data.db} | Server time: ${new Date(data.time).toLocaleTimeString()}`;
+  } catch (e) {
+    if (box) box.textContent = `❌ Cannot connect to ${API_URL}. Start your backend with: npm run dev`;
+  }
+}
+
+// ════════════ TOAST ════════════
+let toastTimer;
+function showToast(msg, isError = false) {
+  clearTimeout(toastTimer);
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.style.borderColor = isError ? 'rgba(255,90,114,.3)' : 'rgba(0,201,167,.3)';
+  t.classList.add('show');
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ════════════ DATE ════════════
+function updateDate() {
+  const el = document.getElementById('liveDate');
+  if (el) el.textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + ' · ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ════════════ BOOT ════════════
+checkAuth();
+</script>
+</body>
+</html>
